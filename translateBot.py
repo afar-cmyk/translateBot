@@ -1,4 +1,5 @@
 import os, discord, requests, uuid
+from discord.ui import Select
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -59,8 +60,37 @@ async def response(interaction: discord.Interaction, *, language:str, text:str):
 
 # Bot command to force an update
 @bot.command()
-async def forceSync(ctx):
+async def check(ctx):
   await bot.tree.sync()
   await ctx.send("Bot ready!")
+  
+
+@bot.command(name="prueba")
+async def prueba(ctx):
+    options = [
+        discord.SelectOption(label="Chile", value="chile"),
+        discord.SelectOption(label="Colombia", value="colombia"),
+        discord.SelectOption(label="Argentina", value="argentina"),
+    ]
+    select = discord.ui.Select(
+        placeholder="Selecciona una bandera",
+        min_values=1,
+        max_values=1,
+        options=options
+    )
+
+    view = discord.ui.View()
+    view.add_item(select)
+
+    message = await ctx.send("Selecciona tu país", view=view)
+
+    def check(interaction):
+        return interaction.message.id == message.id and interaction.user.id == ctx.author.id
+
+    interaction = await bot.wait_for("select_option", check=check)
+    selected_option = interaction.component.selected_options[0]
+    selected_country = selected_option.value
+
+    await ctx.send(f"Eres de {selected_country.capitalize()}")
 
 bot.run(DISCORD_TOKEN)
