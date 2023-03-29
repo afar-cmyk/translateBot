@@ -11,7 +11,7 @@ you can use the command to insall the required modules:
 </br>
 also your .env file should have the next keys and values:
 ```
-DISCORD_TOKEN = your.discord.bot.token
+DISCORD_TOKEN = your.Discord.bot.token
 AZURE_KEY = your.Azure.translator.token
 AZURE_ENDPOINT = your.Azure.http.endopoint
 AZURE_LOCATION = your.Azure.server.location
