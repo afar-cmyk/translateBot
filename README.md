@@ -10,6 +10,7 @@ you can use the command to insall the required modules:
 
 </br>
 also your .env file should have the next keys and values:
+
 ```
 DISCORD_TOKEN = your.discord.bot.token
 AZURE_KEY = your.Azure.translator.token
