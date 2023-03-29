@@ -53,7 +53,7 @@ async def translate(interaction: discord.Interaction, *, text:str):
   await interaction.response.send_message(f"{await azureQuery(defaultLang, text)}")
   
 # Bot command to translate text from any language to a given language
-@bot.tree.command(name='response', description='Translate the given text to the given language. Usage: /re [language] [text]')
+@bot.tree.command(name='response', description='Translate the given text to the selected language. Usage: /re [language] [text]')
 async def response(interaction: discord.Interaction, *, language:str, text:str):
   await interaction.response.send_message(f"{await azureQuery(language, text)}")
 
