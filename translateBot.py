@@ -1,6 +1,7 @@
 import os, discord, requests, uuid
-from discord.ui import Select
+from typing import List
 from discord.ext import commands
+from discord import app_commands
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,15 +12,27 @@ AZURE_KEY = os.getenv('AZURE_KEY')
 AZURE_ENDPOINT = os.getenv('AZURE_ENDPOINT')
 AZURE_LOCATION = os.getenv("AZURE_LOCATION")
 
-# Default language
-defaultLang = 'es' 
+# Dictionary with the available languages and azure codes
+AVAILABLE_LANGUAGES = {
+    'Español': 'es',
+    'English': 'en',
+    'Русский': 'ru',
+    'Português': 'pt',
+    'Italiano': 'it',
+    'Français': 'fr',
+    'Deutsch': 'de',
+    'Bahasa Indonesia': 'id',
+    'Filipino': 'fil',
+    'हिन्दी': 'hi',
+    'Suomi': 'fi'
+}
 
 # Discord bot settings
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='/', intents=intents)
 
 # Query function to Azure servers
-async def azureQuery(language:str, text:str):
+async def azure_query(language:str, text:str):
   constructed_url = AZURE_ENDPOINT + '/translate'
   
   params = {
@@ -51,46 +64,28 @@ async def on_ready():
 # Bot command to translate from any language to spanish
 @bot.tree.command(name='translate', description='Translates the given text to Spanish. Usage: /tr[text]')
 async def translate(interaction: discord.Interaction, *, text:str):
-  await interaction.response.send_message(f"{await azureQuery(defaultLang, text)}")
-  
-# Bot command to translate text from any language to a given language
-@bot.tree.command(name='response', description='Translate the given text to the selected language. Usage: /re [language] [text]')
-async def response(interaction: discord.Interaction, *, language:str, text:str):
-  await interaction.response.send_message(f"{await azureQuery(language, text)}")
+  await interaction.response.send_message(f"{await azure_query(AVAILABLE_LANGUAGES['Español'], text)}")
 
+# Bot command to translate text from any language to the selected language
+@bot.tree.command(name='response', description='Translate the given text to the selected language. Usage: /response [language] [text]')
+async def response(interaction: discord.Interaction, language:str, text:str):
+  await interaction.response.send_message(f"{await azure_query(language, text)}")
+  
+@response.autocomplete('language')
+async def prueba_autocomplete(
+    interaction: discord.Interaction,
+    current: str,
+) -> List[app_commands.Choice[str]]:
+    languages = AVAILABLE_LANGUAGES.keys()
+    return [
+        app_commands.Choice(name=language, value=AVAILABLE_LANGUAGES[language])
+        for language in languages if current.lower() in language.lower()
+    ]
+  
 # Bot command to force an update
 @bot.command()
 async def check(ctx):
   await bot.tree.sync()
   await ctx.send("Bot ready!")
   
-
-@bot.command(name="prueba")
-async def prueba(ctx):
-    options = [
-        discord.SelectOption(label="Chile", value="chile"),
-        discord.SelectOption(label="Colombia", value="colombia"),
-        discord.SelectOption(label="Argentina", value="argentina"),
-    ]
-    select = discord.ui.Select(
-        placeholder="Selecciona una bandera",
-        min_values=1,
-        max_values=1,
-        options=options
-    )
-
-    view = discord.ui.View()
-    view.add_item(select)
-
-    message = await ctx.send("Selecciona tu país", view=view)
-
-    def check(interaction):
-        return interaction.message.id == message.id and interaction.user.id == ctx.author.id
-
-    interaction = await bot.wait_for("select_option", check=check)
-    selected_option = interaction.component.selected_options[0]
-    selected_country = selected_option.value
-
-    await ctx.send(f"Eres de {selected_country.capitalize()}")
-
 bot.run(DISCORD_TOKEN)
